@@ -1,13 +1,12 @@
-import "@/global.css";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { Stack, Tabs } from "expo-router";
+import { View, Text } from "react-native";
+import React from "react";
+import { Tabs } from "expo-router";
 
-export default function RootLayout() {
+export default function AppLayout() {
   return (
-    <Stack screenOptions={{title: "ClickedArt"}}>
-      <Stack.Screen name="index"/>
-      <Stack.Screen name="choose"/>
-      <Stack.Screen name="user"/>
-    </Stack>
-  )
+    <Tabs screenOptions={{ headerShown: false }}>
+      <Tabs.Screen name="index" options={{ title: "Register" }} />
+      <Tabs.Screen name="login" options={{ title: "Login" }} />
+    </Tabs>
+  );
 }

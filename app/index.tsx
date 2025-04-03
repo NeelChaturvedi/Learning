@@ -1,165 +1,254 @@
-import { Image, Pressable, SafeAreaView, Text, View, StyleSheet } from "react-native";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { useState } from "react";
-import * as ImagePicker from "expo-image-picker";
-import { Link } from "expo-router";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  ToastAndroid,
+  ScrollView,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import Button from "@/components/Buttons/Button";
+import axios from "axios";
+import { useForm, Controller } from "react-hook-form";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function Index() {
-  const [imageUri, setImageUri] = useState<string | null>(null);
-  const [imageSize, setImageSize] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
-  const fixedWidth = 300;
-  const maxHeight = 400;
+interface SignUpFormData {
+  email: string;
+  name: string;
+  password: string;
+  mobile: string;
+}
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: false,
-      quality: 1,
-    });
+const Register = () => {
+  const router = useRouter();
+  // const [formData, setFormData] = useState({
+  //   email: "",
+  //   name: "",
+  //   password: "",
+  //   mobile: "",
+  // });
 
-    if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setImageUri(uri);
+  const [showPassword, setShowPassword] = useState(false)
 
-      Image.getSize(uri, (width, height) => {
-        const aspectRatio = height / width;
-        const calculatedHeight = fixedWidth * aspectRatio;
-        const finalHeight = calculatedHeight > maxHeight ? maxHeight : calculatedHeight;
-        setImageSize({ width: fixedWidth, height: finalHeight });
-      });
+  const gotoSignIn = () => {
+    router.navigate("/(tab)/login")
+  }
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignUpFormData>();
+
+  const handleSignUp = async (data: SignUpFormData) => {
+    try {
+      const response = await axios.post(
+        "http://192.168.1.34:6900/api/users/signup",
+        data,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      console.log(response);
+      router.replace("/upload");
+      ToastAndroid.show("Sign In successful", ToastAndroid.SHORT);
+    } catch (error) {
+      console.log(error);
+      ToastAndroid.show("Unknow error: Please try again", ToastAndroid.SHORT);
     }
   };
-
-  const removeImage = () => {
-    setImageUri(null);
-    setImageSize(null);
-  };
-
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Image Upload</Text>
-        <Text style={styles.subtitle}>
-          Upload a Photo of your liking that you want to sell
-        </Text>
-      </View>
+      <ScrollView>
+        <LinearGradient colors={["#c31432", "#240b36"]} style={styles.header}>
+          <Text style={styles.headerText}>Get Started</Text>
+          <Text style={styles.subHeaderText}>Here</Text>
+        </LinearGradient>
 
-      <View style={styles.imageContainer}>
-        <View style={styles.imageUploadBox}>
-          {imageUri ? (
-            <Image
-              source={{ uri: imageUri }}
-              style={{
-                width: imageSize?.width || fixedWidth,
-                height: imageSize?.height || fixedWidth,
-                resizeMode: "contain",
+        <View style={styles.form}>
+          <View style={[styles.inputForm, {marginTop: 20}]}>
+            <Text style={styles.label}>Name</Text>
+            <Controller
+              control={control}
+              name="name"
+              rules={{
+                required: "Name is required",
               }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder="Name"
+                  placeholderTextColor={"#999"}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
             />
-          ) : (
-            <Pressable onPress={pickImage} style={styles.uploadButton}>
-              <View style={styles.uploadIconContainer}>
-                <FontAwesome5 name="cloud-upload-alt" size={34} color="black" />
-              </View>
-              <Text style={styles.uploadText}>Upload Image</Text>
-              <Text style={styles.uploadHintText}>
-                PNG, JPG, or JPEG (max, 500MB)
-              </Text>
-            </Pressable>
-          )}
-        </View>
-      </View>
+            {errors.name && <Text>{errors.name?.message}</Text>}
+          </View>
 
-      <View style={styles.footer}>
-        <Pressable onPress={removeImage} style={styles.optionButton}>
-          <Text style={styles.optionButtonText}>Clear</Text>
-        </Pressable>
-        <Pressable style={styles.optionButton}>
-          <Link href="/choose">
-            <Text style={styles.optionButtonText}>Next</Text>
-          </Link>
-        </Pressable>
-      </View>
+          <View style={styles.inputForm}>
+            <Text style={styles.label}>Contact</Text>
+            <Controller
+              control={control}
+              name="mobile"
+              rules={{
+                required: "Contact is required",
+              }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder="Contact Details"
+                  placeholderTextColor={"#999"}
+                  onChangeText={onChange}
+                  value={value}
+                  keyboardType="numeric"
+                />
+              )}
+            />
+            {errors.mobile && <Text>{errors.mobile?.message}</Text>}
+          </View>
+
+          <View style={styles.inputForm}>
+            <Text style={styles.label}>Email</Text>
+            <Controller
+              control={control}
+              name="email"
+              rules={{
+                required: "Email is required",
+                pattern: { value: /\S+@\S+.\S+/, message: "Invalid email" },
+              }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor={"#999"}
+                  onChangeText={onChange}
+                  value={value}
+                  keyboardType="email-address"
+                />
+              )}
+            />
+            {errors.email && <Text>{errors.email.message}</Text>}
+          </View>
+
+          <View style={styles.inputForm}>
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.passwordContainer}>
+              <Controller
+                control={control}
+                name="password"
+                rules={{ required: "Password is required" }}
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    style={[styles.input, { flex: 1 }]}
+                    placeholder="********"
+                    placeholderTextColor="#999"
+                    onChangeText={onChange}
+                    value={value}
+                    secureTextEntry={!showPassword}
+                  />
+                )}
+              />
+              <TouchableOpacity onPress={() => {setShowPassword(!showPassword)}}>
+                <Ionicons size={22} color="#999" name={showPassword ? "eye-off-outline": "eye-outline"} />
+              </TouchableOpacity>
+            </View>
+            {errors.password && <Text>{errors.password.message}</Text>}
+          </View>
+
+          <Button title="Sign Up" onPress={handleSubmit(handleSignUp)} />
+
+          <View style={styles.signInContainer}>
+            <Text style={styles.signInText}>Don't have account?</Text>
+            <TouchableOpacity onPress={gotoSignIn} >
+              <Text style={styles.signInLink}> Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '80%',
-    marginHorizontal: 'auto',
-    paddingVertical: 30, 
+    backgroundColor: "#fff",
+  },
+  inputForm:{
+    gap:6
   },
   header: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    gap: 10,
-    width: "100%",
+    height: 200,
+    paddingHorizontal: 30,
+    justifyContent: "flex-end",
+    gap: 4,
+    paddingBottom: 50,
   },
-  title: {
+  headerText: {
+    color: "#fff",
+    fontSize: 32,
+    fontWeight: "bold",
+  },
+  subHeaderText: {
+    color: "#fff",
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center'
+    fontWeight: "500",
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#555',
-  },
-  imageContainer: {
+  form: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 30,
+    borderTopStartRadius: 40,
+    borderTopRightRadius: 40,
+    paddingVertical: 30,
+    gap: 20,
   },
-  imageUploadBox: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: '#9ca3af',
+  label: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+  },
+  input: {
+    backgroundColor: "#f0f0f0",
     borderRadius: 10,
-    padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
+    paddingHorizontal: 15,
+    outline: "none",
+    height: 50,
+    fontSize: 16,
   },
-  uploadButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
+  inputFocused: {
+    borderColor: "transparent",
   },
-  uploadIconContainer: {
-    width: 80,
-    height: 80,
-    backgroundColor: '#e5e5e5',
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+  signInContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 15,
   },
-  uploadText: {
-    fontSize: 18,
-  },
-  uploadHintText: {
+  signInText: {
     fontSize: 14,
-    color: '#7f7f7f',
+    color: "#555",
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
+  signInLink: {
+    fontSize: 14,
+    color: "#c31432",
+    fontWeight: "bold",
   },
-  optionButton: {
-    width: '48%',
-    height: 56,
-    backgroundColor: '#3b82f6',
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    height: 50,
   },
-  optionButtonText: {
-    fontSize: 18,
-    color: 'white',
-    textAlign: 'center',
-  }
+  eyeIcon: {
+    position: "absolute",
+    right: 0,
+    top: 10,
+  },
 });
+
+export default Register;

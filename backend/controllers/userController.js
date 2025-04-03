@@ -3,6 +3,7 @@ import bcrypt from "bcrypt"
 
 export const registerUser = async(req, res) =>{
     try {
+        console.log(req.body)
         const {email, name, password}  = req.body
         let user = await User.findOne({email})
         if (user){
@@ -19,6 +20,7 @@ export const registerUser = async(req, res) =>{
 
 
     } catch (error) {
-        res.status(500).send("Aye end user kal aana")
+        res.status(500).send({message: "Internal Server Error", error})
+        console.log("Status : 500", error)
     }
 }

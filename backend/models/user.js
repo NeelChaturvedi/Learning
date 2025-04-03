@@ -7,21 +7,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    },
     password: {
       type: String,
       required: true
     },
     mobile: {
       type: Number,
-    },
-    pincode: {
-      type: Number,
-      required: true,
-    },
-    shippingAddress: {
-      type: String,
-      required: true,
-    },
+      required: true
+    }
   },
   {
     timestamps: true,

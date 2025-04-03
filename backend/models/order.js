@@ -17,6 +17,9 @@ const orderSchema = new mongoose.Schema(
     frame: {
       type: String,
     },
+    size:{
+      type: String,
+    },
     orderStatus: {
       type: String,
       enum: [
@@ -48,13 +51,8 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     shippingAddress: {
-      address: { type: String },
-      country: { type: String },
-      city: { type: String },
-      landmark: { type: String },
-      area: { type: String },
-      pincode: { type: String },
-      state: { type: String },
+      type: String,
+      require: true
     },
   },
   {
